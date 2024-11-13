@@ -1,0 +1,24 @@
+# .golangci.yml
+linters:
+  enable:
+    - errcheck           # 检查未处理的错误
+    - gocritic           # 提供高级代码建议
+    - gosimple           # 简化代码
+    - govet              # Go语言标准的静态检查工具
+    - ineffassign        # 检查多余的赋值
+    - staticcheck        # 高级Go静态分析工具
+    - typecheck          # 类型检查
+    - unused             # 检查未使用的变量和函数
+
+# 设置并发的linters数量
+concurrency: 4
+
+# 只检测go文件
+issues:
+  exclude:
+    - ".*\\.pb\\.go"  # 忽略protobuf文件
+    - ".*\\.gen\\.go" # 忽略生成的go文件
+
+# 显示报告时不显示哪些lint消息
+output:
+  format: json  # 你可以选择json、text等不同格式

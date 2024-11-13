@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  wallet-service:
+    build: .
+    container_name: wallet-service
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=wallet
+      - SSLMODE=disable
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - wallet-network
+    restart: always
+
+  postgres:
+    image: postgres:17.0-alpine3.19
+    container_name: wallet-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=wallet
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - wallet-network
+    restart: always
+
+  redis:
+    image: redis:alpine
+    container_name: wallet-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - wallet-network
+    restart: always
+
+networks:
+  wallet-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

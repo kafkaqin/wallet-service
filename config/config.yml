@@ -1,0 +1,22 @@
+wallet_service:
+  host: "127.0.0.1"
+  port: 8080
+
+postgres:
+  host: "127.0.0.1"
+  port: 5432
+  user: "postgres"
+  password: "postgres"
+  database: "wallet"
+  ssl_mode: "disable"
+
+redis:
+  host: "127.0.0.1"
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10
+  pool_timeout: 5
+  min_idle_conns: 2
+  max_idle_conns: 5
+  conn_max_idle_time: 300
