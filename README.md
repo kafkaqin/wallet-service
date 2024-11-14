@@ -115,6 +115,7 @@ root@ubuntu:~/GolandProjects/wallet-service# ls -l postman/
 total 4
 -rw-r--r-- 1 root root 2188 11月 13 19:36 wallet-service.postman_collection.json
 ```
+
 ## 测试
 使用以下命令运行测试并生成覆盖率报告:
 ![test](./image/img-test.png)
@@ -137,4 +138,16 @@ total 4
 ```bash
     ./bin/golangci-lint run --config .golangci.yml
     {"Issues":[],"Report":{"Linters":[{"Name":"asasalint"},{"Name":"asciicheck"},{"Name":"bidichk"},{"Name":"bodyclose"},{"Name":"canonicalheader"},{"Name":"containedctx"},{"Name":"contextcheck"},{"Name":"copyloopvar"},{"Name":"cyclop"},{"Name":"decorder"},{"Name":"deadcode"},{"Name":"depguard"},{"Name":"dogsled"},{"Name":"dupl"},{"Name":"dupword"},{"Name":"durationcheck"},{"Name":"errcheck","Enabled":true,"EnabledByDefault":true},{"Name":"errchkjson"},{"Name":"errname"},{"Name":"errorlint"},{"Name":"execinquery"},{"Name":"exhaustive"},{"Name":"exhaustivestruct"},{"Name":"exhaustruct"},{"Name":"exportloopref"},{"Name":"forbidigo"},{"Name":"forcetypeassert"},{"Name":"fatcontext"},{"Name":"funlen"},{"Name":"gci"},{"Name":"ginkgolinter"},{"Name":"gocheckcompilerdirectives"},{"Name":"gochecknoglobals"},{"Name":"gochecknoinits"},{"Name":"gochecksumtype"},{"Name":"gocognit"},{"Name":"goconst"},{"Name":"gocritic","Enabled":true},{"Name":"gocyclo"},{"Name":"godot"},{"Name":"godox"},{"Name":"err113"},{"Name":"gofmt"},{"Name":"gofumpt"},{"Name":"goheader"},{"Name":"goimports"},{"Name":"golint"},{"Name":"mnd"},{"Name":"gomnd"},{"Name":"gomoddirectives"},{"Name":"gomodguard"},{"Name":"goprintffuncname"},{"Name":"gosec"},{"Name":"gosimple","Enabled":true,"EnabledByDefault":true},{"Name":"gosmopolitan"},{"Name":"govet","Enabled":true,"EnabledByDefault":true},{"Name":"grouper"},{"Name":"ifshort"},{"Name":"iface"},{"Name":"importas"},{"Name":"inamedparam"},{"Name":"ineffassign","Enabled":true,"EnabledByDefault":true},{"Name":"interfacebloat"},{"Name":"interfacer"},{"Name":"intrange"},{"Name":"ireturn"},{"Name":"lll"},{"Name":"loggercheck"},{"Name":"maintidx"},{"Name":"makezero"},{"Name":"maligned"},{"Name":"mirror"},{"Name":"misspell"},{"Name":"musttag"},{"Name":"nakedret"},{"Name":"nestif"},{"Name":"nilerr"},{"Name":"nilnil"},{"Name":"nlreturn"},{"Name":"noctx"},{"Name":"nonamedreturns"},{"Name":"nosnakecase"},{"Name":"nosprintfhostport"},{"Name":"paralleltest"},{"Name":"perfsprint"},{"Name":"prealloc"},{"Name":"predeclared"},{"Name":"promlinter"},{"Name":"protogetter"},{"Name":"reassign"},{"Name":"recvcheck"},{"Name":"revive"},{"Name":"rowserrcheck"},{"Name":"sloglint"},{"Name":"scopelint"},{"Name":"sqlclosecheck"},{"Name":"spancheck"},{"Name":"staticcheck","Enabled":true,"EnabledByDefault":true},{"Name":"structcheck"},{"Name":"stylecheck"},{"Name":"tagalign"},{"Name":"tagliatelle"},{"Name":"tenv"},{"Name":"testableexamples"},{"Name":"testifylint"},{"Name":"testpackage"},{"Name":"thelper"},{"Name":"tparallel"},{"Name":"typecheck","Enabled":true,"EnabledByDefault":true},{"Name":"unconvert"},{"Name":"unparam"},{"Name":"unused","Enabled":true,"EnabledByDefault":true},{"Name":"usestdlibvars"},{"Name":"varcheck"},{"Name":"varnamelen"},{"Name":"wastedassign"},{"Name":"whitespace"},{"Name":"wrapcheck"},{"Name":"wsl"},{"Name":"zerologlint"},{"Name":"nolintlint"}]}}
+```
+
+
+### stop service and clean 
+
+```bash
+    root@ubuntu:~/GolandProjects/wallet-service# docker-compose  down 
+    [+] Running 4/4
+    ✔ Container wallet-service               Removed                                                                                                                                                      0.0s 
+    ✔ Container wallet-postgres              Removed                                                                                                                                                      0.3s 
+    ✔ Container wallet-redis                 Removed                                                                                                                                                      0.3s 
+    ✔ Network wallet-service_wallet-network  Removed
 ```
