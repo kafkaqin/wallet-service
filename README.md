@@ -107,6 +107,8 @@
 - `GET /wallet/:user_id/balance`: 查询指定用户钱包的余额。
 - `GET /wallet/:user_id/transactions`: 查询指定用户的交易历史。
 
+### postman文件
+
 - postman文件 postman/wallet-service.postman_collection.json
 ```
 root@ubuntu:~/GolandProjects/wallet-service# ls -l postman/
@@ -115,6 +117,8 @@ total 4
 ```
 ## 测试
 使用以下命令运行测试并生成覆盖率报告:
+![test](./image/img-test.png)
+
 ```bash
     go test ./... -race -cover
             wallet-service/cmd              coverage: 0.0% of statements
@@ -129,6 +133,7 @@ total 4
 ```
 ## golangci-lint 
 
+![golangci-lint](./image/img.png)
 ```bash
     ./bin/golangci-lint run --config .golangci.yml
     {"Issues":[],"Report":{"Linters":[{"Name":"asasalint"},{"Name":"asciicheck"},{"Name":"bidichk"},{"Name":"bodyclose"},{"Name":"canonicalheader"},{"Name":"containedctx"},{"Name":"contextcheck"},{"Name":"copyloopvar"},{"Name":"cyclop"},{"Name":"decorder"},{"Name":"deadcode"},{"Name":"depguard"},{"Name":"dogsled"},{"Name":"dupl"},{"Name":"dupword"},{"Name":"durationcheck"},{"Name":"errcheck","Enabled":true,"EnabledByDefault":true},{"Name":"errchkjson"},{"Name":"errname"},{"Name":"errorlint"},{"Name":"execinquery"},{"Name":"exhaustive"},{"Name":"exhaustivestruct"},{"Name":"exhaustruct"},{"Name":"exportloopref"},{"Name":"forbidigo"},{"Name":"forcetypeassert"},{"Name":"fatcontext"},{"Name":"funlen"},{"Name":"gci"},{"Name":"ginkgolinter"},{"Name":"gocheckcompilerdirectives"},{"Name":"gochecknoglobals"},{"Name":"gochecknoinits"},{"Name":"gochecksumtype"},{"Name":"gocognit"},{"Name":"goconst"},{"Name":"gocritic","Enabled":true},{"Name":"gocyclo"},{"Name":"godot"},{"Name":"godox"},{"Name":"err113"},{"Name":"gofmt"},{"Name":"gofumpt"},{"Name":"goheader"},{"Name":"goimports"},{"Name":"golint"},{"Name":"mnd"},{"Name":"gomnd"},{"Name":"gomoddirectives"},{"Name":"gomodguard"},{"Name":"goprintffuncname"},{"Name":"gosec"},{"Name":"gosimple","Enabled":true,"EnabledByDefault":true},{"Name":"gosmopolitan"},{"Name":"govet","Enabled":true,"EnabledByDefault":true},{"Name":"grouper"},{"Name":"ifshort"},{"Name":"iface"},{"Name":"importas"},{"Name":"inamedparam"},{"Name":"ineffassign","Enabled":true,"EnabledByDefault":true},{"Name":"interfacebloat"},{"Name":"interfacer"},{"Name":"intrange"},{"Name":"ireturn"},{"Name":"lll"},{"Name":"loggercheck"},{"Name":"maintidx"},{"Name":"makezero"},{"Name":"maligned"},{"Name":"mirror"},{"Name":"misspell"},{"Name":"musttag"},{"Name":"nakedret"},{"Name":"nestif"},{"Name":"nilerr"},{"Name":"nilnil"},{"Name":"nlreturn"},{"Name":"noctx"},{"Name":"nonamedreturns"},{"Name":"nosnakecase"},{"Name":"nosprintfhostport"},{"Name":"paralleltest"},{"Name":"perfsprint"},{"Name":"prealloc"},{"Name":"predeclared"},{"Name":"promlinter"},{"Name":"protogetter"},{"Name":"reassign"},{"Name":"recvcheck"},{"Name":"revive"},{"Name":"rowserrcheck"},{"Name":"sloglint"},{"Name":"scopelint"},{"Name":"sqlclosecheck"},{"Name":"spancheck"},{"Name":"staticcheck","Enabled":true,"EnabledByDefault":true},{"Name":"structcheck"},{"Name":"stylecheck"},{"Name":"tagalign"},{"Name":"tagliatelle"},{"Name":"tenv"},{"Name":"testableexamples"},{"Name":"testifylint"},{"Name":"testpackage"},{"Name":"thelper"},{"Name":"tparallel"},{"Name":"typecheck","Enabled":true,"EnabledByDefault":true},{"Name":"unconvert"},{"Name":"unparam"},{"Name":"unused","Enabled":true,"EnabledByDefault":true},{"Name":"usestdlibvars"},{"Name":"varcheck"},{"Name":"varnamelen"},{"Name":"wastedassign"},{"Name":"whitespace"},{"Name":"wrapcheck"},{"Name":"wsl"},{"Name":"zerologlint"},{"Name":"nolintlint"}]}}
