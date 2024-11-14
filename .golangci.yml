@@ -18,7 +18,8 @@ issues:
   exclude:
     - ".*\\.pb\\.go"  # 忽略protobuf文件
     - ".*\\.gen\\.go" # 忽略生成的go文件
-
+    - ".*test.go$"  # 排除所有以 "test.go" 结尾的文件
+    - "vendor/.*"            # 排除 vendor 目录
 # 显示报告时不显示哪些lint消息
 output:
-  format: json  # 你可以选择json、text等不同格式
+  formats: json  # 你可以选择json、text等不同格式

@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . .
 
 # 运行golangci-lint
-# RUN ./bin/golangci-lint run --config .golangci.yml
+RUN ./bin/golangci-lint run --config .golangci.yml
 
 # 编译Go应用
 RUN go build -o wallet-service ./cmd/main.go

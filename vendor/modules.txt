@@ -76,9 +76,20 @@ github.com/go-playground/universal-translator
 github.com/go-playground/validator/v10
 # github.com/go-redis/redis/v8 v8.11.5
 ## explicit; go 1.17
+github.com/go-redis/redis/v8
+github.com/go-redis/redis/v8/internal
+github.com/go-redis/redis/v8/internal/hashtag
+github.com/go-redis/redis/v8/internal/hscan
+github.com/go-redis/redis/v8/internal/pool
+github.com/go-redis/redis/v8/internal/proto
+github.com/go-redis/redis/v8/internal/rand
+github.com/go-redis/redis/v8/internal/util
 # github.com/go-redis/redis_rate/v10 v10.0.1
 ## explicit; go 1.19
 github.com/go-redis/redis_rate/v10
+# github.com/go-redis/redis_rate/v9 v9.1.2
+## explicit; go 1.17
+github.com/go-redis/redis_rate/v9
 # github.com/go-redis/redismock/v8 v8.11.5
 ## explicit; go 1.15
 # github.com/go-redis/redismock/v9 v9.2.0

@@ -11,7 +11,7 @@ var loc *time.Location
 
 func Get() *time.Location {
 	onceLocation.Do(func() {
-		l, err := time.LoadLocation("Asia/Shanghai") //设置时区
+		l, err := time.LoadLocation("Asia/Shanghai") // 设置时区
 		if err != nil {
 			l = time.FixedZone("CST", 8*3600)
 		}

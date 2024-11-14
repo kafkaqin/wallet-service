@@ -41,13 +41,27 @@ func NewWalletService(logger *wallet_logger.Logger, db *sqlx.DB, redis *redis.Cl
 
 // Deposit 存款
 func (s *walletService) Deposit(ctx context.Context, senderID, receiverID int, amount decimal.Decimal, transactionType models.TransactionType) error {
+
+	if amount.LessThan(decimal.Zero) {
+		return errors.New("amount must be greater than zero")
+	}
+
 	tx, err := s.db.Beginx()
 	if err != nil {
 		s.logger.Error(ctx, "Deposit Failed to begin transaction", zap.Int("senderID", senderID),
 			zap.Int("receiverID", receiverID), zap.Error(err))
 		return err
 	}
-	defer tx.Rollback()
+
+	defer func() {
+		if err != nil {
+			err = tx.Rollback()
+			if err != nil {
+				s.logger.Error(ctx, "Deposit Failed Rollback transaction", zap.Int("senderID", senderID),
+					zap.Int("receiverID", receiverID), zap.Error(err))
+			}
+		}
+	}()
 
 	res, err := tx.Exec("UPDATE wallets SET balance = balance + $1 WHERE user_id = $2", amount, senderID)
 	if err != nil {
@@ -84,7 +98,8 @@ func (s *walletService) Deposit(ctx context.Context, senderID, receiverID int, a
 	}
 
 	// 更新缓存中的余额
-	err = s.redis.Set(ctx, fmt.Sprintf("wallet:balance:%d", senderID), amount.String(), 0).Err()
+
+	err = s.redis.IncrByFloat(ctx, fmt.Sprintf("wallet:balance:%d", senderID), amount.InexactFloat64()).Err()
 	if err != nil {
 		// 记录日志，不影响事务
 		s.logger.Warn(ctx, "Deposit Failed to update Redis cache:", zap.Int("senderID", senderID),
@@ -94,7 +109,11 @@ func (s *walletService) Deposit(ctx context.Context, senderID, receiverID int, a
 	return tx.Commit()
 }
 
-func (s *walletService) depositWithTx(ctx context.Context, tx *sqlx.Tx, senderID, receiverID int, amount decimal.Decimal, transactionType models.TransactionType) error {
+func (s *walletService) DepositWithTx(ctx context.Context, tx *sqlx.Tx, senderID, receiverID int, amount decimal.Decimal, transactionType models.TransactionType) error {
+
+	if amount.LessThan(decimal.Zero) {
+		return errors.New("amount must be greater than zero")
+	}
 
 	res, err := tx.Exec("UPDATE wallets SET balance = balance + $1 WHERE user_id = $2", amount, senderID)
 	if err != nil {
@@ -122,6 +141,13 @@ func (s *walletService) depositWithTx(ctx context.Context, tx *sqlx.Tx, senderID
 		transactionType = models.DepositTransactionType
 	}
 
+	if tx == nil {
+		tx, err = s.db.Beginx()
+		if err != nil {
+			return err
+		}
+	}
+
 	_, err = tx.Exec("INSERT INTO transactions (receiver_user_id,sender_user_id, transaction_type, amount, created_at) VALUES ($1, $2, $3, $4, $5)",
 		senderID, receiverID, transactionType, amount, time.Now())
 	if err != nil {
@@ -131,7 +157,7 @@ func (s *walletService) depositWithTx(ctx context.Context, tx *sqlx.Tx, senderID
 	}
 
 	// 更新缓存中的余额
-	err = s.redis.Set(ctx, fmt.Sprintf("wallet:balance:%d", senderID), amount.String(), 0).Err()
+	err = s.redis.IncrByFloat(ctx, fmt.Sprintf("wallet:balance:%d", senderID), amount.InexactFloat64()).Err()
 	if err != nil {
 		// 记录日志，不影响事务
 		s.logger.Warn(ctx, "depositWithTx Failed to update Redis cache:", zap.Int("senderID", senderID),
@@ -144,10 +170,17 @@ func (s *walletService) depositWithTx(ctx context.Context, tx *sqlx.Tx, senderID
 
 // Withdraw 取款
 func (s *walletService) Withdraw(ctx context.Context, senderID, receiverID int, amount decimal.Decimal, transactionType models.TransactionType) error {
+
+	if amount.LessThan(decimal.Zero) {
+		return errors.New("amount must be greater than zero")
+	}
+
 	var balance decimal.Decimal
 	// 从 Redis 缓存中查询余额
 	cacheBalance, err := s.redis.Get(ctx, fmt.Sprintf("wallet:balance:%d", senderID)).Result()
-	if err == redis.Nil {
+
+	switch {
+	case err == redis.Nil:
 		// 缓存不存在，从数据库查询余额
 		err = s.db.Get(&balance, "SELECT balance FROM wallets WHERE user_id = $1", senderID)
 		if err != nil {
@@ -155,11 +188,14 @@ func (s *walletService) Withdraw(ctx context.Context, senderID, receiverID int, 
 				zap.Int("receiverID", receiverID), zap.Error(err))
 			return errors.New("insufficient funds")
 		}
-	} else if err != nil {
+
+	case err != nil:
+		// Redis 获取余额失败
 		s.logger.Error(ctx, "Withdraw Failed to get Balance from redis", zap.Int("senderID", senderID),
 			zap.Int("receiverID", receiverID), zap.Error(err))
 		return err
-	} else {
+
+	default:
 		// 从缓存中读取余额
 		balance, err = decimal.NewFromString(cacheBalance)
 		if err != nil {
@@ -167,6 +203,7 @@ func (s *walletService) Withdraw(ctx context.Context, senderID, receiverID int, 
 				zap.Int("receiverID", receiverID), zap.Error(err))
 			return err
 		}
+		// 如果缓存的余额为零，重新从数据库查询
 		if balance.IsZero() {
 			err = s.db.Get(&balance, "SELECT balance FROM wallets WHERE user_id = $1", senderID)
 			if err != nil {
@@ -186,7 +223,16 @@ func (s *walletService) Withdraw(ctx context.Context, senderID, receiverID int, 
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+
+	defer func() {
+		if err != nil {
+			err = tx.Rollback()
+			if err != nil {
+				s.logger.Error(ctx, "Withdraw Failed Rollback transaction", zap.Int("senderID", senderID),
+					zap.Int("receiverID", receiverID), zap.Error(err))
+			}
+		}
+	}()
 
 	_, err = tx.Exec("UPDATE wallets SET balance = balance - $1 WHERE user_id = $2", amount, senderID)
 	if err != nil {
@@ -218,11 +264,17 @@ func (s *walletService) Withdraw(ctx context.Context, senderID, receiverID int, 
 	return tx.Commit()
 }
 
-func (s *walletService) withdrawWithTx(ctx context.Context, tx *sqlx.Tx, senderID int, amount decimal.Decimal) error {
+func (s *walletService) WithdrawWithTx(ctx context.Context, tx *sqlx.Tx, senderID int, amount decimal.Decimal) error {
+
+	if amount.LessThan(decimal.Zero) {
+		return errors.New("amount must be greater than zero")
+	}
+
 	var balance decimal.Decimal
 	// 从 Redis 缓存中查询余额
 	cacheBalance, err := s.redis.Get(ctx, fmt.Sprintf("wallet:balance:%d", senderID)).Result()
-	if err == redis.Nil {
+	switch {
+	case err == redis.Nil:
 		// 缓存不存在，从数据库查询余额
 		err = s.db.Get(&balance, "SELECT balance FROM wallets WHERE user_id = $1", senderID)
 		if err != nil {
@@ -230,9 +282,12 @@ func (s *walletService) withdrawWithTx(ctx context.Context, tx *sqlx.Tx, senderI
 				zap.Error(err))
 			return errors.New("insufficient funds")
 		}
-	} else if err != nil {
+
+	case err != nil:
+		// 如果获取 Redis 时出现错误，返回错误
 		return err
-	} else {
+
+	default:
 		// 从缓存中读取余额
 		balance, err = decimal.NewFromString(cacheBalance)
 		if err != nil {
@@ -245,6 +300,13 @@ func (s *walletService) withdrawWithTx(ctx context.Context, tx *sqlx.Tx, senderI
 					zap.Error(err))
 				return errors.New("insufficient funds")
 			}
+		}
+	}
+
+	if tx == nil {
+		tx, err = s.db.Beginx()
+		if err != nil {
+			return err
 		}
 	}
 
@@ -273,6 +335,11 @@ func (s *walletService) withdrawWithTx(ctx context.Context, tx *sqlx.Tx, senderI
 
 // Transfer 转账
 func (s *walletService) Transfer(ctx context.Context, senderID, receiverID int, amount decimal.Decimal) error {
+
+	if amount.LessThan(decimal.Zero) {
+		return errors.New("amount must be greater than zero")
+	}
+
 	tx, err := s.db.Beginx()
 	if err != nil {
 		s.logger.Error(ctx, "Transfer Failed to begin transaction:", zap.Int("senderID", senderID),
@@ -280,16 +347,24 @@ func (s *walletService) Transfer(ctx context.Context, senderID, receiverID int, 
 		return err
 	}
 	// 确保事务回滚
-	defer tx.Rollback()
+	defer func() {
+		if err != nil {
+			err = tx.Rollback()
+			if err != nil {
+				s.logger.Error(ctx, "Transfer Failed Rollback transaction", zap.Int("senderID", senderID),
+					zap.Int("receiverID", receiverID), zap.Error(err))
+			}
+		}
+	}()
 
-	err = s.withdrawWithTx(ctx, tx, senderID, amount)
+	err = s.WithdrawWithTx(ctx, tx, senderID, amount)
 	if err != nil {
 		s.logger.Error(ctx, "Transfer Failed withdrawWithTx:", zap.Int("senderID", senderID),
 			zap.Int("receiverID", receiverID), zap.Error(err))
 		return err
 	}
 
-	err = s.depositWithTx(ctx, tx, receiverID, senderID, amount, models.TransferTransactionType)
+	err = s.DepositWithTx(ctx, tx, receiverID, senderID, amount, models.TransferTransactionType)
 	if err != nil {
 		s.logger.Error(ctx, "Transfer Failed depositWithTx:", zap.Int("senderID", senderID),
 			zap.Int("receiverID", receiverID), zap.Error(err))
@@ -304,7 +379,9 @@ func (s *walletService) GetBalance(ctx context.Context, userID int) (decimal.Dec
 	var balance decimal.Decimal
 	// 尝试从 Redis 获取缓存中的余额
 	cacheBalance, err := s.redis.Get(ctx, fmt.Sprintf("wallet:balance:%d", userID)).Result()
-	if err == redis.Nil {
+
+	switch {
+	case err == redis.Nil:
 		// 缓存不存在，从数据库查询余额
 		err = s.db.Get(&balance, "SELECT balance FROM wallets WHERE user_id = $1", userID)
 		if err != nil {
@@ -321,11 +398,14 @@ func (s *walletService) GetBalance(ctx context.Context, userID int) (decimal.Dec
 			// 记录日志，不影响主流程
 			s.logger.Warn(ctx, "GetBalance Failed to cache balance:", zap.Error(err))
 		}
-	} else if err != nil {
+
+	case err != nil:
+		// Redis 查询失败，记录日志并返回错误
 		s.logger.Error(ctx, "GetBalance Failed get balance from cache:", zap.Int("userID", userID),
 			zap.Error(err))
 		return balance, err
-	} else {
+
+	default:
 		// 从缓存中读取余额
 		balance, err = decimal.NewFromString(cacheBalance)
 		if err != nil {
@@ -338,7 +418,7 @@ func (s *walletService) GetBalance(ctx context.Context, userID int) (decimal.Dec
 	return balance, nil
 }
 
-// GetTransactionHistory 获取交易历史 TODO 分页功能
+// GetTransactionHistory 获取交易历史
 func (s *walletService) GetTransactionHistory(userID int) ([]models.Transaction, error) {
 	var transactions []models.Transaction
 	err := s.db.Select(&transactions, "SELECT * FROM transactions WHERE sender_user_id = $1", userID)

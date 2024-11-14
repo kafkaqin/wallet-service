@@ -49,7 +49,7 @@ func (wc *WalletController) Deposit(c *gin.Context) {
 		handleError(c, CODE_INVALID_PARAMS, err)
 		return
 	}
-	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("Deposit:%d", userID), 1).AllowN(ctx, limitCount) { //限频
+	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("Deposit:%d", userID), 1).AllowN(ctx, limitCount) { // 限频
 		handleError(c, CODE_REQUEST_TOO_QUICKLY, errors.New("trigger limit exceeded"))
 		return
 	}
@@ -78,20 +78,20 @@ func (wc *WalletController) Withdraw(c *gin.Context) {
 		return
 	}
 	ctx := c.Request.Context()
-	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("Withdraw:%d", userID), 1).AllowN(ctx, limitCount) { //限频
+	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("Withdraw:%d", userID), 1).AllowN(ctx, limitCount) { // 限频
 		handleError(c, CODE_REQUEST_TOO_QUICKLY, errors.New("trigger limit exceeded"))
 		return
 	}
 
 	var request struct{ Amount decimal.Decimal }
 	if err := c.BindJSON(&request); err != nil {
-		wc.logger.Error(ctx, "WalletController Deposit BindJSON",
+		wc.logger.Error(ctx, "WalletController Withdraw BindJSON",
 			zap.Int("userID", userID), zap.Error(err))
 		handleError(c, CODE_INVALID_PARAMS, err)
 		return
 	}
 	if err := wc.walletService.Withdraw(ctx, userID, userID, request.Amount, models.WithdrawTransactionType); err != nil {
-		wc.logger.Error(ctx, "WalletController Deposit BindJSON",
+		wc.logger.Error(ctx, "WalletController Withdraw",
 			zap.Int("userID", userID), zap.Error(err))
 		handleError(c, CODE_INTERNALSERVER, err)
 		return
@@ -108,7 +108,7 @@ func (wc *WalletController) Transfer(c *gin.Context) {
 		return
 	}
 	ctx := c.Request.Context()
-	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("Transfer:%d", senderID), 1).AllowN(ctx, limitCount) { //限频
+	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("Transfer:%d", senderID), 1).AllowN(ctx, limitCount) { // 限频
 		handleError(c, CODE_REQUEST_TOO_QUICKLY, errors.New("trigger limit exceeded"))
 		return
 	}
@@ -146,7 +146,7 @@ func (wc *WalletController) GetBalance(c *gin.Context) {
 	}
 
 	ctx := c.Request.Context()
-	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("GetBalance:%d", userID), 1).AllowN(ctx, limitCount) { //限频
+	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("GetBalance:%d", userID), 1).AllowN(ctx, limitCount) { // 限频
 		handleError(c, CODE_REQUEST_TOO_QUICKLY, errors.New("trigger limit exceeded"))
 		return
 	}
@@ -170,7 +170,7 @@ func (wc *WalletController) GetTransactionHistory(c *gin.Context) {
 		return
 	}
 
-	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("GetTransactionHistory:%d", userID), 1).AllowN(ctx, limitCount) { //限频
+	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("GetTransactionHistory:%d", userID), 1).AllowN(ctx, limitCount) { // 限频
 		handleError(c, CODE_REQUEST_TOO_QUICKLY, errors.New("trigger limit exceeded"))
 		return
 	}

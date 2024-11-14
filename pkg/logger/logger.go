@@ -35,19 +35,19 @@ func NewLogger() *Logger {
 func mustBuildZapLogger() *zap.Logger {
 	c := zap.NewProductionConfig()
 
-	//设置日志输出路径
+	// 设置日志输出路径
 	p, err := getOutputPaths()
 	if err != nil {
-		//nothing
+		// nothing
 	} else {
 		c.OutputPaths = []string{"stdout", p}
 		c.ErrorOutputPaths = []string{"stderr"}
 	}
 
-	//设置日志指针
+	// 设置日志指针
 	c.Level = level
 
-	//设置日志格式
+	// 设置日志格式
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.TimeKey = "time"
 	customTimeEncoder := func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
@@ -102,14 +102,10 @@ func (l *Logger) WithField(key string, value interface{}) *Logger {
 
 func (l *Logger) WithFields(kvs ...Field) *Logger {
 	logger := NewLogger()
-	//加入原来的fields
-	for _, v := range l.fields {
-		logger.fields = append(logger.fields, v)
-	}
-	//增加新的fields
-	for _, v := range kvs {
-		logger.fields = append(logger.fields, v)
-	}
+	// 加入原来的fields
+	logger.fields = append(logger.fields, l.fields...)
+	// 增加新的fields
+	logger.fields = append(logger.fields, kvs...)
 	return logger
 }
 
@@ -234,9 +230,7 @@ func output(ctx context.Context, l *Logger, level zapcore.Level, msg string, fs 
 	for _, v := range l.fields {
 		fields = append(fields, zap.Any(v.Key, v.Value))
 	}
-	for _, f := range fs {
-		fields = append(fields, f)
-	}
+	fields = append(fields, fs...)
 	l.z.Log(level, msg, fields...)
 
 	return msg + fieldsToString(fields)
@@ -261,7 +255,7 @@ func createZapFieldFromOutgoingCtx(ctx context.Context, key string) (zap.Field, 
 	if !ok {
 		return zap.Field{}, false
 	}
-	var v = md.Get(key)
+	v := md.Get(key)
 	if len(v) == 0 {
 		return zap.Field{}, false
 	}

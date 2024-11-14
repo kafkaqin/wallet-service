@@ -11,7 +11,5 @@ func setLogLevelFromEnviron() {
 	err := ParseAndSetLogLevel(levelStr)
 	if err != nil {
 		SetLogLevel(DebugLevel) // 默认设置为DEBUG等级
-	} else {
-		//do nothing
 	}
 }

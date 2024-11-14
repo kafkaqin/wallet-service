@@ -9,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http/httptest"
 	"strings"
@@ -48,14 +48,14 @@ func (m *MockWalletService) GetTransactionHistory(userID int) ([]models.Transact
 }
 
 // 测试 GetBalance 方法
-func TestWalletController_GetBalance_Success(t *testing.T) {
+func TestWalletController_GetBalance_Success1(t *testing.T) {
 	// 模拟 Redis 客户端
 	ctx := context.Background()
 	// 模拟 WalletService
 	mockService := new(MockWalletService)
 	var redisCli = redis.NewClient(&redis.Options{
-		PoolSize:     100, //最大链接数
-		MinIdleConns: 25,  //空闲链接数
+		PoolSize:     100, // 最大链接数
+		MinIdleConns: 25,  // 空闲链接数
 		Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password:     "",
 		DB:           0,
@@ -98,8 +98,8 @@ func TestWalletController_GetBalance_InvalidUserID(t *testing.T) {
 	// 模拟 WalletService
 	mockService := new(MockWalletService)
 	var redisCli = redis.NewClient(&redis.Options{
-		PoolSize:     100, //最大链接数
-		MinIdleConns: 25,  //空闲链接数
+		PoolSize:     100, // 最大链接数
+		MinIdleConns: 25,  // 空闲链接数
 		Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password:     "",
 		DB:           0,
@@ -117,7 +117,7 @@ func TestWalletController_GetBalance_InvalidUserID(t *testing.T) {
 	router.GET("/wallet/:user_id/balance", controller.GetBalance)
 
 	// 模拟请求，传递有效的 user_id
-	req := httptest.NewRequest("GET", fmt.Sprintf("/wallet/fs/balance"), nil)
+	req := httptest.NewRequest("GET", fmt.Sprintf("/wallet/%s/balance", "fs"), nil)
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
@@ -129,14 +129,14 @@ func TestWalletController_GetBalance_InvalidUserID(t *testing.T) {
 	mockService.AssertExpectations(t)
 }
 
-func TestWalletController_Transfer_Success(t *testing.T) {
+func TestWalletController_Transfer_Success2(t *testing.T) {
 	// 模拟 Redis 客户端
 	ctx := context.Background()
 	// 模拟 WalletService
 	mockService := new(MockWalletService)
 	var redisCli = redis.NewClient(&redis.Options{
-		PoolSize:     100, //最大链接数
-		MinIdleConns: 25,  //空闲链接数
+		PoolSize:     100, // 最大链接数
+		MinIdleConns: 25,  // 空闲链接数
 		Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password:     "",
 		DB:           0,
@@ -176,8 +176,8 @@ func TestWalletController_Withdraw_Success(t *testing.T) {
 	// 模拟 WalletService
 	mockService := new(MockWalletService)
 	var redisCli = redis.NewClient(&redis.Options{
-		PoolSize:     100, //最大链接数
-		MinIdleConns: 25,  //空闲链接数
+		PoolSize:     100, // 最大链接数
+		MinIdleConns: 25,  // 空闲链接数
 		Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password:     "",
 		DB:           0,
@@ -210,14 +210,14 @@ func TestWalletController_Withdraw_Success(t *testing.T) {
 	mockService.AssertExpectations(t)
 }
 
-func TestWalletController_Deposit_Failed(t *testing.T) {
+func TestWalletController_Deposit_Failed1(t *testing.T) {
 	// 模拟 Redis 客户端
 	ctx := context.Background()
 	// 模拟 WalletService
 	mockService := new(MockWalletService)
 	var redisCli = redis.NewClient(&redis.Options{
-		PoolSize:     100, //最大链接数
-		MinIdleConns: 25,  //空闲链接数
+		PoolSize:     100, // 最大链接数
+		MinIdleConns: 25,  // 空闲链接数
 		Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password:     "",
 		DB:           0,
@@ -245,7 +245,7 @@ func TestWalletController_Deposit_Failed(t *testing.T) {
 
 		// 模拟请求，传递有效的 user_id 和存款金额
 		req := httptest.NewRequest("POST", fmt.Sprintf("/wallet/%d/deposit", userID), nil)
-		req.Body = ioutil.NopCloser(strings.NewReader(fmt.Sprintf(`{"amount": %s}`, amount.String())))
+		req.Body = io.NopCloser(strings.NewReader(fmt.Sprintf(`{"amount": %s}`, amount.String())))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
@@ -259,14 +259,14 @@ func TestWalletController_Deposit_Failed(t *testing.T) {
 	})
 }
 
-func TestWalletController_Deposit_Success(t *testing.T) {
+func TestWalletController_Deposit_Success1(t *testing.T) {
 	// 模拟 Redis 客户端
 	ctx := context.Background()
 	// 模拟 WalletService
 	mockService := new(MockWalletService)
 	var redisCli = redis.NewClient(&redis.Options{
-		PoolSize:     100, //最大链接数
-		MinIdleConns: 25,  //空闲链接数
+		PoolSize:     100, // 最大链接数
+		MinIdleConns: 25,  // 空闲链接数
 		Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password:     "",
 		DB:           0,
@@ -313,8 +313,8 @@ func TestWalletController_GetTransactionHistory(t *testing.T) {
 	// 模拟 WalletService
 	mockService := new(MockWalletService)
 	var redisCli = redis.NewClient(&redis.Options{
-		PoolSize:     100, //最大链接数
-		MinIdleConns: 25,  //空闲链接数
+		PoolSize:     100, // 最大链接数
+		MinIdleConns: 25,  // 空闲链接数
 		Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password:     "",
 		DB:           0,
@@ -363,8 +363,8 @@ func TestWalletController_GetTransactionHistory_Failed(t *testing.T) {
 	// 模拟 WalletService
 	mockService := new(MockWalletService)
 	var redisCli = redis.NewClient(&redis.Options{
-		PoolSize:     100, //最大链接数
-		MinIdleConns: 25,  //空闲链接数
+		PoolSize:     100, // 最大链接数
+		MinIdleConns: 25,  // 空闲链接数
 		Addr:         fmt.Sprintf("%s:%d", "127.0.0.1", 6379),
 		Password:     "",
 		DB:           0,
