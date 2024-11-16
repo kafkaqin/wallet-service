@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc/metadata"
@@ -63,7 +64,8 @@ func mustBuildZapLogger() *zap.Logger {
 	if err != nil {
 		panic(err)
 	}
-	return z
+
+	return z.With(zap.Any("x-wallet-service-traceid", strings.ReplaceAll(uuid.New().String(), "-", "")))
 }
 
 func (l *Logger) GetZapLogger() *zap.Logger {
@@ -220,6 +222,7 @@ func output(ctx context.Context, l *Logger, level zapcore.Level, msg string, fs 
 		}
 		fields = append(fields, f)
 	}
+
 	for _, v := range outgoingKeys {
 		f, ok := createZapFieldFromOutgoingCtx(ctx, v)
 		if !ok {

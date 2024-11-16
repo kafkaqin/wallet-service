@@ -6,5 +6,5 @@ var incomingKeys = []string{
 }
 
 var outgoingKeys = []string{
-	"ApiName",
+	"x-wallet-service-traceid",
 }

@@ -40,7 +40,6 @@ func generateTraceID() string {
 
 // Deposit 存款
 func (wc *WalletController) Deposit(c *gin.Context) {
-	wc.logger.WithField("traceID", generateTraceID())
 	ctx := c.Request.Context()
 	userID, err := strconv.Atoi(c.Param("user_id"))
 	if err != nil {
@@ -49,6 +48,9 @@ func (wc *WalletController) Deposit(c *gin.Context) {
 		handleError(c, CODE_INVALID_PARAMS, err)
 		return
 	}
+	wc.logger.Info(ctx, "WalletController Deposit strconv.Atoi",
+		zap.Int("userID", userID))
+
 	if !rdsLimit.NewRdsLimit(wc.redis, fmt.Sprintf("Deposit:%d", userID), 1).AllowN(ctx, limitCount) { // 限频
 		handleError(c, CODE_REQUEST_TOO_QUICKLY, errors.New("trigger limit exceeded"))
 		return

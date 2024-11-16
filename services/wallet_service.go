@@ -41,7 +41,6 @@ func NewWalletService(logger *wallet_logger.Logger, db *sqlx.DB, redis *redis.Cl
 
 // Deposit 存款
 func (s *walletService) Deposit(ctx context.Context, senderID, receiverID int, amount decimal.Decimal, transactionType models.TransactionType) error {
-
 	if amount.LessThan(decimal.Zero) {
 		return errors.New("amount must be greater than zero")
 	}
